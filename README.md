@@ -7,7 +7,7 @@ note: to run an R Markdown file from command line, run\
 Rscript -e "rmarkdown::render('SCRIPT_NAME.Rmd')"
 
 Data downloaded from CDC Wonder at https://wonder.cdc.gov/bridged-race-population.html \
-Instructions: Download for each year as .txt file in three age groups (0-29, 30-64, 65+) by sex, age group, state, county\
+Instructions: Download for each year as .txt file in three age groups (0-29, 30-64, 65+) by sex, age group, state, county
 
 Data preparation (data_prep) list:
 
