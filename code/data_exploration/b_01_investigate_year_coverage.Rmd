@@ -1,0 +1,39 @@
+---
+title: "Investage fips codes which don't last the entire period"
+output: html_document
+---
+
+# First step to load packages and file locations etc.
+```{r include=FALSE}
+rm(list=ls())
+ 
+# 1a Declare root directory, folder locations and load essential stuff
+project.folder <- paste0(print(here::here()),'/')
+source(paste0(project.folder,'0_00_create_folder_structure.R'))
+source(paste0(functions.folder,'script_initiate.R'))
+```
+
+# Load formatted data
+```{r}
+filename_in = paste0(population.formatted.folder,
+                           'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',start_year_cdc,' ',end_year_cdc,'.csv')
+dat = read_csv(filename_in)
+```
+
+# Establish first and last year of population data for each county fips code
+```{r}
+dat_year_range = dat %>% group_by(fips) %>% summarise(year_min=min(year),year_max=max(year))
+```
+
+# Figure out which county fips codes do not have the entire range of data
+```{r}
+dat_missing = dat_year_range %>%
+  filter(year_min>start_year_cdc | year_max<end_year_cdc)
+```
+
+# Save output
+```{r}
+filename_out = paste0(population.incomplete.folder,
+                      'vintage_',vintage,'/Incomplete Counties ',start_year_cdc,' ',end_year_cdc,'.csv')
+write_csv(dat_missing,filename_out)
+```

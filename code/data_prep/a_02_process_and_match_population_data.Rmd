@@ -1,0 +1,67 @@
+---
+title: "Re-format processed population data"
+output: html_document
+---
+
+# First step to load packages and file locations etc.
+```{r include=FALSE}
+rm(list=ls())
+ 
+# 1a Declare root directory, folder locations and load essential stuff
+project.folder <- paste0(print(here::here()),'/')
+source(paste0(project.folder,'0_00_create_folder_structure.R'))
+source(paste0(functions.folder,'script_initiate.R'))
+```
+
+# Load each year of raw population data and tidy up, then save as cleaned csv
+```{r}
+dat_all = data.frame()
+for(year in c(start_year_cdc:end_year_cdc)){
+  for(sex in c('F','M')){
+    filename <- paste0(population.cleaned.folder,
+                           'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',sex,' ',year,'.csv')
+
+    dat_current <- read_csv(filename, col_types = cols(`Gender Code`="c", `Age Group Code` = "c")) %>%
+      select(-`Age Group`,-`State`,-`County`,-`Gender`,-`Yearly July 1st Estimates`) %>% # get rid of unnecessary columns
+      rename(`year`=`Yearly July 1st Estimates Code`,`sex`=`Gender Code`,`age`=`Age Group Code`,
+             `stateFips`=`State Code`, `fips`=`County Code`, `pop`=`Population`) %>% # rename columns
+      mutate(countyFips = str_sub(fips, start= -3)) %>% # county fips 3-digit codes
+      mutate(sex = as.numeric(case_when(
+        sex== 'F' ~ '2',
+        sex== 'M' ~ '1',
+        TRUE ~ NA_character_))) %>% # recode sex
+      mutate(age = as.numeric(case_when(
+        age== '1' ~ '0',
+        age== '1-4' ~ '0',
+        age=='5-9' ~ '5',
+        age=='10-14' ~ '10',
+        age=='15-19' ~ '15',
+        age=='20-24' ~ '20',
+        age=='25-29' ~ '25',
+        age=='30-34' ~ '30',
+        age=='35-39' ~ '35',
+        age=='40-44' ~ '40',
+        age=='45-49' ~ '45',
+        age=='50-54' ~ '50',
+        age=='55-59' ~ '55',
+        age=='60-64' ~ '60',
+        age=='65-69' ~ '65',
+        age=='70-74' ~ '70',
+        age=='75-79' ~ '75',
+        age=='80-84' ~ '80',
+        age=='85+' ~ '85',
+        TRUE ~ NA_character_))) %>%
+      group_by(fips,sex,age,year,stateFips,countyFips) %>%
+      summarise(pop=sum(pop)) %>% # sum pop by new groups
+      select(year,fips,stateFips,countyFips,sex,age,pop)
+    
+    dat_all = data.table::rbindlist(list(dat_all,dat_current))
+}}
+```
+
+# Save output
+```{r}
+filename_out = paste0(population.formatted.folder,
+                      'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',start_year_cdc,' ',end_year_cdc,'.csv')
+write_csv(dat_all,filename_out)
+```

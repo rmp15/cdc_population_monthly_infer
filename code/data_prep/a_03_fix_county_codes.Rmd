@@ -1,0 +1,31 @@
+---
+title: "Fix county codes"
+output: html_document
+---
+
+# First step to load packages and file locations etc.
+```{r include=FALSE}
+rm(list=ls())
+ 
+# 1a Declare root directory, folder locations and load essential stuff
+project.folder <- paste0(print(here::here()),'/')
+source(paste0(project.folder,'0_00_create_folder_structure.R'))
+source(paste0(functions.folder,'script_initiate.R'))
+```
+
+# Load formatted data
+```{r}
+filename_in = paste0(population.formatted.folder,
+                           'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',start_year_cdc,' ',start_year_cdc,'.csv')
+dat = read_csv(filename_in)
+```
+
+# Fix county codes which change over time
+```{r}
+# TO DO
+```
+
+# Save output
+```{r}
+# TO DO
+```

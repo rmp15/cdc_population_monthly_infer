@@ -18,5 +18,6 @@ a_04_infer_monthly_population                  - infer population by month from 
 
 Data exploration (data_exploration) list:
 
-b_01_compare_old_against_new                   - compare originally downloaded vintages with current vintage\
-b_02_explore_population_over_time              - load and plot time series of population for sanity checks
+b_01_investigate_year_coverage                 - initial exploration of which county fips codes don't run the entire time
+b_02_compare_old_against_new                   - compare originally downloaded vintages with current vintage\
+b_03_explore_population_over_time              - load and plot time series of population for sanity checks

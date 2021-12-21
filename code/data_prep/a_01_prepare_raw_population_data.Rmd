@@ -23,10 +23,9 @@ for(year in c(start_year_cdc:end_year_cdc)){
     filename_out <- paste0(population.cleaned.folder,
                            'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',sex,' ',year,'.csv')
 
-    dat <- read_tsv(filename_in, col_names=TRUE, col_types = cols(`Age Group Code` = "c")) %>% 
+    dat <- read_tsv(filename_in, col_names=TRUE, col_types = cols(`Gender Code`="c", `Age Group Code` = "c")) %>% 
       filter(if_any(everything(), ~ !is.na(.))) %>%
       select(-Notes) %>%
       write_csv(.,filename_out)
   }}
-# dat_csv <- read_csv(filename_out, col_types = cols(`Age Group Code` = "c"))
 ```
