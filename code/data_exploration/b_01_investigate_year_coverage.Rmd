@@ -13,27 +13,45 @@ source(paste0(project.folder,'0_00_create_folder_structure.R'))
 source(paste0(functions.folder,'script_initiate.R'))
 ```
 
-# Load formatted data
+# load original pre-1990 data
+```{r}
+dat.pre.1990 <- read.dta(paste0(original_population_data,'countyPopulationsnewyears.dta')) %>%
+  dplyr::filter(year<1990 & year> 1981 & age!=99) %>% # county fips only reliable 1982 onwards
+  select(year,fips,stateFips,countyFips,sex,age,pop)
+```
+
+# Load formatted cdc bridged-race data
 ```{r}
 filename_in = paste0(population.formatted.folder,
                            'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',start_year_cdc,' ',end_year_cdc,'.csv')
-dat = read_csv(filename_in)
+dat.1990.onwards = read_csv(filename_in)
 ```
 
-# Establish first and last year of population data for each county fips code
+# combine pre-1990 and cdc bridged-race (1990 onwards) data
 ```{r}
-dat_year_range = dat %>% group_by(fips) %>% summarise(year_min=min(year),year_max=max(year))
+dat = bind_rows(dat.pre.1990, dat.1990.onwards) %>%
+  arrange(year,fips,sex,age)
+```
+
+# Establish first and last year of population data for each county fips code, as well as completeness of records
+```{r}
+dat_year_range = dat %>% group_by(fips) %>% summarise(year_min=min(year),year_max=max(year),no_years=length(unique(year)))
 ```
 
 # Figure out which county fips codes do not have the entire range of data
 ```{r}
 dat_missing = dat_year_range %>%
-  filter(year_min>start_year_cdc | year_max<end_year_cdc)
+  filter(year_min>start_year_cdc | year_max<end_year_cdc | no_years<max(no_years))
+```
+
+# Print incomplete counties
+```{r}
+print(dat_missing)
 ```
 
 # Save output
 ```{r}
 filename_out = paste0(population.incomplete.folder,
-                      'vintage_',vintage,'/Incomplete Counties ',start_year_cdc,' ',end_year_cdc,'.csv')
+                      'vintage_',vintage,'/Incomplete Counties 1982 ',end_year_cdc,'.csv')
 write_csv(dat_missing,filename_out)
 ```

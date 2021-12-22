@@ -1,5 +1,6 @@
 # list of objects used across different scripts
 vintage=2020
+start_year_overall = 1982
 start_year_cdc=1990
 end_year_cdc=2020
 

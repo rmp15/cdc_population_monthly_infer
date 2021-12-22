@@ -171,11 +171,17 @@ pre code {
 <div id="first-step-to-load-packages-and-file-locations-etc." class="section level1">
 <h1>First step to load packages and file locations etc.</h1>
 </div>
-<div id="load-formatted-data" class="section level1">
-<h1>Load formatted data</h1>
+<div id="load-original-pre-1990-data" class="section level1">
+<h1>load original pre-1990 data</h1>
+<pre class="r"><code>dat.pre.1990 &lt;- read.dta(paste0(original_population_data,&#39;countyPopulationsnewyears.dta&#39;)) %&gt;%
+  dplyr::filter(year&lt;1990 &amp; year&gt; 1981 &amp; age!=99) %&gt;% # county fips only reliable 1982 onwards
+  select(year,fips,stateFips,countyFips,sex,age,pop)</code></pre>
+</div>
+<div id="load-formatted-cdc-bridged-race-data" class="section level1">
+<h1>Load formatted cdc bridged-race data</h1>
 <pre class="r"><code>filename_in = paste0(population.formatted.folder,
                            &#39;vintage_&#39;,vintage,&#39;/Bridged-Race Population Estimates 1990-2020 &#39;,start_year_cdc,&#39; &#39;,end_year_cdc,&#39;.csv&#39;)
-dat = read_csv(filename_in)</code></pre>
+dat.1990.onwards = read_csv(filename_in)</code></pre>
 <pre><code>## Parsed with column specification:
 ## cols(
 ##   year = col_double(),
@@ -187,19 +193,42 @@ dat = read_csv(filename_in)</code></pre>
 ##   pop = col_double()
 ## )</code></pre>
 </div>
-<div id="establish-first-and-last-year-of-population-data-for-each-county-fips-code" class="section level1">
-<h1>Establish first and last year of population data for each county fips code</h1>
-<pre class="r"><code>dat_year_range = dat %&gt;% group_by(fips) %&gt;% summarise(year_min=min(year),year_max=max(year))</code></pre>
+<div id="combine-pre-1990-and-cdc-bridged-race-1990-onwards-data" class="section level1">
+<h1>combine pre-1990 and cdc bridged-race (1990 onwards) data</h1>
+<pre class="r"><code>dat = bind_rows(dat.pre.1990, dat.1990.onwards) %&gt;%
+  arrange(year,fips,sex,age)</code></pre>
+</div>
+<div id="establish-first-and-last-year-of-population-data-for-each-county-fips-code-as-well-as-completeness-of-records" class="section level1">
+<h1>Establish first and last year of population data for each county fips code, as well as completeness of records</h1>
+<pre class="r"><code>dat_year_range = dat %&gt;% group_by(fips) %&gt;% summarise(year_min=min(year),year_max=max(year),no_years=length(unique(year)))</code></pre>
 </div>
 <div id="figure-out-which-county-fips-codes-do-not-have-the-entire-range-of-data" class="section level1">
 <h1>Figure out which county fips codes do not have the entire range of data</h1>
 <pre class="r"><code>dat_missing = dat_year_range %&gt;%
-  filter(year_min&gt;start_year_cdc | year_max&lt;end_year_cdc)</code></pre>
+  filter(year_min&gt;start_year_cdc | year_max&lt;end_year_cdc | no_years&lt;max(no_years))</code></pre>
+</div>
+<div id="print-incomplete-counties" class="section level1">
+<h1>Print incomplete counties</h1>
+<pre class="r"><code>print(dat_missing)</code></pre>
+<pre><code>## # A tibble: 25 x 4
+##    fips  year_min year_max no_years
+##    &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;int&gt;
+##  1 02063     2010     2020       11
+##  2 02066     2010     2020       11
+##  3 02068     1990     2020       31
+##  4 02105     2000     2020       21
+##  5 02158     1990     2020       31
+##  6 02195     2000     2020       21
+##  7 02198     2000     2020       21
+##  8 02201     1982     1999       18
+##  9 02230     2000     2020       21
+## 10 02231     1982     1989        8
+## # … with 15 more rows</code></pre>
 </div>
 <div id="save-output" class="section level1">
 <h1>Save output</h1>
 <pre class="r"><code>filename_out = paste0(population.incomplete.folder,
-                      &#39;vintage_&#39;,vintage,&#39;/Incomplete Counties &#39;,start_year_cdc,&#39; &#39;,end_year_cdc,&#39;.csv&#39;)
+                      &#39;vintage_&#39;,vintage,&#39;/Incomplete Counties 1982 &#39;,end_year_cdc,&#39;.csv&#39;)
 write_csv(dat_missing,filename_out)</code></pre>
 </div>
 

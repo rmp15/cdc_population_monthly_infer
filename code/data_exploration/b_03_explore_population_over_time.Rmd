@@ -1,0 +1,62 @@
+---
+title: "Explore population over time for each county"
+output: html_document
+---
+
+# First step to load packages and file locations etc.
+```{r include=FALSE}
+rm(list=ls())
+ 
+# 1a Declare root directory, folder locations and load essential stuff
+project.folder <- paste0(print(here::here()),'/')
+source(paste0(project.folder,'0_00_create_folder_structure.R'))
+source(paste0(functions.folder,'script_initiate.R'))
+```
+
+# Load population that has been fixed to have consistent counties
+```{r}
+dat_all= data.frame()
+  for(year_selected in c(start_year_overall:end_year_cdc)){
+    if(year_selected<1990){
+      filename_in = paste0(population.county.fixed.folder,
+                        'pre_1990/pop_fixed_counties_', year_selected,'.csv')  
+    }
+    if(year_selected>=1990){
+      filename_in = paste0(population.county.fixed.folder,
+                        'vintage_',vintage,'/pop_fixed_counties_', year_selected,'.csv')
+    }
+    dat_year=read_csv(filename_in)
+    dat_all = data.table::rbindlist(list(dat_all,dat_year))
+    rm(dat_year)
+}
+```
+
+# Don't worry about Alaska for now (still need to fix FIPS but don't use in any analyses thus far )
+```{r}
+ dat = dat_all %>%
+  dplyr::filter(stateFips!='02')
+```
+
+## Plots of population by state over time for all states summarised across entire population
+```{r user-input4, include=TRUE}
+
+dat_entire_pop = dat %>%
+  group_by(year,fips,stateFips,countyFips) %>%
+  summarise(pop=sum(pop))
+
+for(i in sort(unique(dat_entire_pop$stateFips))){
+  
+  dat_state = dat_entire_pop %>%
+    dplyr::filter(stateFips==i)
+  
+  pdf(paste0(population.over.time.folder,i,'_population_over_time_',start_year_overall,'_',end_year_cdc,'.pdf'),paper='a4r',height=0,width=0)
+  for(j in sort(unique(dat_state$fips))){
+      print(ggplot(data=subset(dat_state,fips==j)) + 
+        geom_line(aes(x=year,y=pop)) +
+        facet_wrap(~fips,scales='free') +
+        ggtitle(j) +
+        guides(color=FALSE))
+  }
+  dev.off()
+}
+```
