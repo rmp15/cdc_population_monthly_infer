@@ -1,0 +1,94 @@
+---
+title: "Compare older vintage against new vintage"
+output: html_document
+---
+
+# First step to load packages and file locations etc.
+```{r include=FALSE}
+rm(list=ls())
+ 
+# 1a Declare root directory, folder locations and load essential stuff
+project.folder <- paste0(print(here::here()),'/')
+source(paste0(project.folder,'0_00_create_folder_structure.R'))
+source(paste0(functions.folder,'script_initiate.R'))
+```
+
+# load original data and fix counties to be consistent with updated counties
+```{r}
+dat.original <- read.dta(paste0(original_population_data,'countyPopulationsnewyears.dta')) %>%
+  dplyr::filter(year> 1981 & age!=99) %>% # county fips only reliable 1982 onwards
+  select(year,fips,stateFips,countyFips,sex,age,pop) %>%
+      mutate(fips = case_when(
+        # Alaska FIPS codes to do here when have time
+        fips== 'XXXXX' ~ 'XXXXX',
+        fips== '08001' | fips== '08013' | fips== '08059' | fips== '08123' ~ '08014', # 08001, 08013, 08059, 08123 -> 08014
+        fips== '12025' ~ '12086', #  12025 -> 12086
+        fips== '30031' | fips== '30067'~ '30113', # 30113 -> 30031, 30067
+        fips== '46113' ~ '46102', # 46113 -> 46102
+        fips== '51560' ~ '51005', # 51560 -> 51005
+        fips== '51780' ~ '51083', # 51780 -> 51083
+        fips== '51515' ~ '51019', # 51515 -> 51019
+        TRUE ~ fips
+        )) %>%
+      mutate(countyFips = str_sub(fips, start= -3)) %>% # county fips 3-digit codes 
+      group_by(year, fips, stateFips, countyFips, sex, age) %>%
+      summarise(pop.original=sum(pop))
+```
+
+# Load population that has been fixed to have consistent counties
+```{r}
+dat_all= data.frame()
+  for(year_selected in c(start_year_overall:end_year_cdc)){
+    if(year_selected<1990){
+      filename_in = paste0(population.county.fixed.folder,
+                        'pre_1990/pop_fixed_counties_', year_selected,'.csv')  
+    }
+    if(year_selected>=1990){
+      filename_in = paste0(population.county.fixed.folder,
+                        'vintage_',vintage,'/pop_fixed_counties_', year_selected,'.csv')
+    }
+    dat_year=read_csv(filename_in)
+    dat_all = data.table::rbindlist(list(dat_all,dat_year))
+    rm(dat_year)
+  }
+
+dat_all = dat_all %>%
+  dplyr::filter(year %in% c(min(dat.original$year):max(dat.original$year)))
+```
+
+# Merge original and updated data
+```{r}
+dat_combined = left_join(dat_all, dat.original) %>%
+  dplyr::filter(!(stateFips%in%c('02','15')))
+```
+
+## Plots of population by state over time for all states summarised across entire population
+```{r}
+for(i in sort(unique(dat_combined$year))){
+  pdf(paste0(population.compare.folder,
+             'population_compare_by_year_',i,'.pdf'),paper='a4r',height=0,width=0)
+      print(ggplot(data=subset(dat_combined,year==i)) + 
+        geom_point(aes(x=pop.original,y=pop)) +
+        ggtitle(i) +
+        facet_wrap(~stateFips,scales='free') +
+        guides(color=FALSE))
+    dev.off()
+}
+```
+# Mis-matched data? Save output
+```{r}
+dat_mismatched_1 = anti_join(dat.original, dat_all) %>%
+  dplyr::filter(stateFips!='02') %>%
+  mutate(which='original')
+
+dat_mismatched_2 = anti_join(dat_all,dat.original) %>%
+  dplyr::filter(stateFips!='02') %>%
+  mutate(which='new')
+
+dat_mismatched = bind_rows(dat_mismatched_1,dat_mismatched_2) %>%
+  dplyr::filter(!(stateFips%in%c('02','15')))
+
+filename_out = paste0(population.mismatched.folder,
+                      'vintage_',vintage,'/compare_by_year_',min(dat.original$year),'_',max(dat.original$year),'.csv')
+write_csv(dat_mismatched,filename_out)
+```
