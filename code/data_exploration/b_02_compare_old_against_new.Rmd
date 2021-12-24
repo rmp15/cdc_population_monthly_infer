@@ -59,7 +59,9 @@ dat_all = dat_all %>%
 # Merge original and updated data
 ```{r}
 dat_combined = left_join(dat_all, dat.original) %>%
-  dplyr::filter(!(stateFips%in%c('02','15')))
+  dplyr::filter(!(stateFips%in%c('02','15'))) %>%
+  mutate(pop.diff=pop-pop.original) %>%
+  na.omit()
 ```
 
 ## Plots of population by state over time for all states summarised across entire population
