@@ -1,7 +1,7 @@
 # Generate monthly population by sex, age group, county in the United States
-Work in progress by Robbie M Parks
+Work in progress by Robbie M Parks\
 
-Currenty monthly population during 1982 - 2020 for females and males by ten-year age group (0-4,5-14,15-24,...,65-74,75-84,85+ years) for all counties in US except Alaska (working on it).
+Currenty monthly population (vintage 2020) during 1982 - 2020 for females and males by ten-year age group (0-4,5-14,15-24,...,65-74,75-84,85+ years) for all counties in US except Alaska (working on it).
 
 note: please run 0_00_create_folder_structure.R first to create folders which may not be there when first loaded.
 
