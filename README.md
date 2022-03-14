@@ -1,13 +1,15 @@
 # Generate monthly population by sex, age group, county in the United States
 Work in progress by Robbie M Parks
 
+Currenty monthly population during 1982 - 2020 for females and males by ten-year age group (0-4,5-14,15-24,...,65-74,75-84,85+ years) for all counties in US except Alaska (working on it).
+
 note: please run 0_00_create_folder_structure.R first to create folders which may not be there when first loaded.
 
 note: to run an R Markdown file from command line, run\ 
 Rscript -e "rmarkdown::render('SCRIPT_NAME.Rmd')"
 
 Data downloaded from CDC Wonder at https://wonder.cdc.gov/bridged-race-population.html \
-Instructions: Download for each year as .txt file in two sexes (F, M) by sex, age group, state, county
+Instructions on downloading raw files from link above: Download for each year as .txt file in two sexes (F, M) by sex, age group, state, county
 
 Data preparation (data_prep) list:
 
