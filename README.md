@@ -1,7 +1,7 @@
 # Generate monthly population by sex, 10-year age group, county in the United States 1982-2020
 Work in progress by Robbie M Parks
 
-Currenty monthly population (vintage 2020) during 1982 - 2020 for females and males by ten-year age group (0-4,5-14,15-24,...,65-74,75-84,85+ years) for all counties (by FIPS code) in US except Alaska (working on it).
+Currently monthly population (vintage 2020) during 1982 - 2020 for females and males by ten-year age group (0-4,5-14,15-24,...,65-74,75-84,85+ years) for all counties (by FIPS code) in US except Alaska (working on it).
 
 Actual output to use found at: output/population_processed/10_year_age_groups
 
