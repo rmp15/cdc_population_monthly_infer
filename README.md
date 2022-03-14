@@ -5,7 +5,6 @@ Currenty monthly population (vintage 2020) during 1982 - 2020 for females and ma
 
 Actual output to use found at: output/population_processed/10_year_age_groups
 
-note: please run 0_00_create_folder_structure.R first to create folders which may not be there when first loaded.\
 note: a_03 contains a lookup of FIPS Codes which have been changed over time to be consistent over time. 
 
 Data for Vintage 2020 downloaded from CDC Wonder at https://wonder.cdc.gov/bridged-race-population.html \
@@ -24,5 +23,7 @@ b_01_investigate_year_coverage                 - initial exploration of which co
 b_02_compare_old_against_new                   - compare originally downloaded vintage (2010) with current vintage (2020)\
 b_03_explore_population_over_time              - load and plot time series of population for sanity checks
 
+Personal running notes:\
+note: please run 0_00_create_folder_structure.R first to create folders which may not be there when first loaded.\
 note: to run an R Markdown file from command line, run\ 
 Rscript -e "rmarkdown::render('SCRIPT_NAME.Rmd')"
