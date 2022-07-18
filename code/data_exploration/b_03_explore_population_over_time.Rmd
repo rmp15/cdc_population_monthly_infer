@@ -31,7 +31,7 @@ dat_all= data.frame()
 }
 ```
 
-# Don't worry about Alaska for now (still need to fix FIPS but don't use in any analyses thus far )
+# Don't worry about Alaska for now (still need to fix FIPS but don't use in any analyses thus far)
 ```{r}
  dat = dat_all %>%
   dplyr::filter(stateFips!='02')

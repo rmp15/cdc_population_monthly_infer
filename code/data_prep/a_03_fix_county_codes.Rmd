@@ -23,7 +23,7 @@ dat.pre.1990 <- read.dta(paste0(original_population_data,'countyPopulationsnewye
 # Load formatted cdc bridged-race data
 ```{r}
 filename_in = paste0(population.formatted.folder,
-                           'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',start_year_cdc,' ',end_year_cdc,'.csv')
+                      'vintage_',vintage,'/Bridged-Race Population Estimates ',start_year_cdc,' ',end_year_cdc,'.csv')
 dat.1990.onwards = read_csv(filename_in)
 ```
 

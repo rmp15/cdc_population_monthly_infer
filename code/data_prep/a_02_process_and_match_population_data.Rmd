@@ -62,6 +62,6 @@ for(year in c(start_year_cdc:end_year_cdc)){
 # Save output
 ```{r}
 filename_out = paste0(population.formatted.folder,
-                      'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',start_year_cdc,' ',end_year_cdc,'.csv')
+                      'vintage_',vintage,'/Bridged-Race Population Estimates ',start_year_cdc,' ',end_year_cdc,'.csv')
 write_csv(dat_all,filename_out)
 ```
