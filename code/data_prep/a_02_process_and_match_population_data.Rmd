@@ -13,7 +13,7 @@ source(paste0(project.folder,'0_00_create_folder_structure.R'))
 source(paste0(functions.folder,'script_initiate.R'))
 ```
 
-# Load each year of raw population data and tidy up, then save as cleaned csv
+# Load each year of raw age group population data and tidy up, then save as cleaned csv
 ```{r}
 dat_all = data.frame()
 for(year in c(start_year_cdc:end_year_cdc)){
@@ -63,5 +63,83 @@ for(year in c(start_year_cdc:end_year_cdc)){
 ```{r}
 filename_out = paste0(population.formatted.folder,
                       'vintage_',vintage,'/Bridged-Race Population Estimates ',start_year_cdc,' ',end_year_cdc,'.csv')
+write_csv(dat_all,filename_out)
+```
+
+# Load each year of raw race population data and tidy up, then save as cleaned csv
+```{r}
+dat_all = data.frame()
+for(year in c(start_year_cdc:end_year_cdc)){
+  for(sex in c('F','M')){
+    filename <- paste0(population.cleaned.folder,
+                           'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',sex,' race ',year,'.csv')
+
+    dat_current <- read_csv(filename, col_types = cols(`Gender Code`="c", `Race Code` = "c")) %>%
+      select(-`Race`,-`State`,-`County`,-`Gender`,-`Yearly July 1st Estimates`) %>% # get rid of unnecessary columns
+      rename(`year`=`Yearly July 1st Estimates Code`,`sex`=`Gender Code`,`race`=`Race Code`,
+             `stateFips`=`State Code`, `fips`=`County Code`, `pop`=`Population`) %>% # rename columns
+      mutate(countyFips = str_sub(fips, start= -3)) %>% # county fips 3-digit codes
+      mutate(sex = as.numeric(case_when(
+        sex== 'F' ~ '2',
+        sex== 'M' ~ '1',
+        TRUE ~ NA_character_))) %>% # recode sex
+      mutate(race = case_when(
+        race== '1002-5' ~ 'American Indian or Alaska Native',
+        race== 'A-PI' ~ 'Asian or Pacific Islander',
+        race== '2054-5' ~ 'Black or African American',
+        race== '2106-3' ~ 'White',
+        TRUE ~ NA_character_)) %>% # recode race
+      mutate(pop = as.numeric(pop)) %>% # pop as numeric
+      filter_at(vars(fips), all_vars(!is.na(.))) %>%
+      group_by(fips,sex,race,year,stateFips,countyFips) %>%
+      summarise(pop=sum(pop)) %>% # sum pop by new groups
+      select(year,fips,stateFips,countyFips,sex,race,pop)
+    
+    dat_all = data.table::rbindlist(list(dat_all,dat_current))
+}}
+```
+
+# Save output
+```{r}
+filename_out = paste0(population.formatted.folder,
+                      'vintage_',vintage,'/Bridged-Race Population Estimates race ',start_year_cdc,' ',end_year_cdc,'.csv')
+write_csv(dat_all,filename_out)
+```
+
+# Load each year of raw ethnicity population data and tidy up, then save as cleaned csv
+```{r}
+dat_all = data.frame()
+for(year in c(start_year_cdc:end_year_cdc)){
+  for(sex in c('F','M')){
+    filename <- paste0(population.cleaned.folder,
+                           'vintage_',vintage,'/Bridged-Race Population Estimates 1990-2020 ',sex,' ethnicity ',year,'.csv')
+
+    dat_current <- read_csv(filename, col_types = cols(`Gender Code`="c", `Ethnicity Code` = "c")) %>%
+      select(-`Ethnicity`,-`State`,-`County`,-`Gender`,-`Yearly July 1st Estimates`) %>% # get rid of unnecessary columns
+      rename(`year`=`Yearly July 1st Estimates Code`,`sex`=`Gender Code`,`ethnicity`=`Ethnicity Code`,
+             `stateFips`=`State Code`, `fips`=`County Code`, `pop`=`Population`) %>% # rename columns
+      mutate(countyFips = str_sub(fips, start= -3)) %>% # county fips 3-digit codes
+      mutate(sex = as.numeric(case_when(
+        sex== 'F' ~ '2',
+        sex== 'M' ~ '1',
+        TRUE ~ NA_character_))) %>% # recode sex
+      mutate(ethnicity = case_when(
+        ethnicity== '2135-2' ~ 'Hispanic or Latino',
+        ethnicity== '2186-5' ~ 'Not Hispanic or Latino',
+        TRUE ~ NA_character_)) %>% # recode ethnicity
+      mutate(pop = as.numeric(pop)) %>% # pop as numeric
+      filter_at(vars(fips), all_vars(!is.na(.))) %>%
+      group_by(fips,sex,ethnicity,year,stateFips,countyFips) %>%
+      summarise(pop=sum(pop)) %>% # sum pop by new groups
+      select(year,fips,stateFips,countyFips,sex,ethnicity,pop)
+    
+    dat_all = data.table::rbindlist(list(dat_all,dat_current))
+}}
+```
+
+# Save output
+```{r}
+filename_out = paste0(population.formatted.folder,
+                      'vintage_',vintage,'/Bridged-Race Population Estimates ethnicity ',start_year_cdc,' ',end_year_cdc,'.csv')
 write_csv(dat_all,filename_out)
 ```

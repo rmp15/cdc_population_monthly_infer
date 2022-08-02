@@ -369,9 +369,9 @@ pre code {
 <div id="first-step-to-load-packages-and-file-locations-etc." class="section level1">
 <h1>First step to load packages and file locations etc.</h1>
 </div>
-<div id="load-each-year-of-raw-population-data-and-tidy-up-then-save-as-cleaned-csv" class="section level1">
-<h1>Load each year of raw population data and tidy up, then save as
-cleaned csv</h1>
+<div id="load-each-year-of-raw-age-group-population-data-and-tidy-up-then-save-as-cleaned-csv" class="section level1">
+<h1>Load each year of raw age group population data and tidy up, then
+save as cleaned csv</h1>
 <pre class="r"><code>dat_all = data.frame()
 for(year in c(start_year_cdc:end_year_cdc)){
   for(sex in c(&#39;F&#39;,&#39;M&#39;)){
@@ -543,6 +543,454 @@ for(year in c(start_year_cdc:end_year_cdc)){
 <h1>Save output</h1>
 <pre class="r"><code>filename_out = paste0(population.formatted.folder,
                       &#39;vintage_&#39;,vintage,&#39;/Bridged-Race Population Estimates &#39;,start_year_cdc,&#39; &#39;,end_year_cdc,&#39;.csv&#39;)
+write_csv(dat_all,filename_out)</code></pre>
+</div>
+<div id="load-each-year-of-raw-race-population-data-and-tidy-up-then-save-as-cleaned-csv" class="section level1">
+<h1>Load each year of raw race population data and tidy up, then save as
+cleaned csv</h1>
+<pre class="r"><code>dat_all = data.frame()
+for(year in c(start_year_cdc:end_year_cdc)){
+  for(sex in c(&#39;F&#39;,&#39;M&#39;)){
+    filename &lt;- paste0(population.cleaned.folder,
+                           &#39;vintage_&#39;,vintage,&#39;/Bridged-Race Population Estimates 1990-2020 &#39;,sex,&#39; race &#39;,year,&#39;.csv&#39;)
+
+    dat_current &lt;- read_csv(filename, col_types = cols(`Gender Code`=&quot;c&quot;, `Race Code` = &quot;c&quot;)) %&gt;%
+      select(-`Race`,-`State`,-`County`,-`Gender`,-`Yearly July 1st Estimates`) %&gt;% # get rid of unnecessary columns
+      rename(`year`=`Yearly July 1st Estimates Code`,`sex`=`Gender Code`,`race`=`Race Code`,
+             `stateFips`=`State Code`, `fips`=`County Code`, `pop`=`Population`) %&gt;% # rename columns
+      mutate(countyFips = str_sub(fips, start= -3)) %&gt;% # county fips 3-digit codes
+      mutate(sex = as.numeric(case_when(
+        sex== &#39;F&#39; ~ &#39;2&#39;,
+        sex== &#39;M&#39; ~ &#39;1&#39;,
+        TRUE ~ NA_character_))) %&gt;% # recode sex
+      mutate(race = case_when(
+        race== &#39;1002-5&#39; ~ &#39;American Indian or Alaska Native&#39;,
+        race== &#39;A-PI&#39; ~ &#39;Asian or Pacific Islander&#39;,
+        race== &#39;2054-5&#39; ~ &#39;Black or African American&#39;,
+        race== &#39;2106-3&#39; ~ &#39;White&#39;,
+        TRUE ~ NA_character_)) %&gt;% # recode race
+      mutate(pop = as.numeric(pop)) %&gt;% # pop as numeric
+      filter_at(vars(fips), all_vars(!is.na(.))) %&gt;%
+      group_by(fips,sex,race,year,stateFips,countyFips) %&gt;%
+      summarise(pop=sum(pop)) %&gt;% # sum pop by new groups
+      select(year,fips,stateFips,countyFips,sex,race,pop)
+    
+    dat_all = data.table::rbindlist(list(dat_all,dat_current))
+}}</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;race&#39;, &#39;year&#39;, &#39;stateFips&#39;.
+## You can override using the `.groups` argument.</code></pre>
+</div>
+<div id="save-output-1" class="section level1">
+<h1>Save output</h1>
+<pre class="r"><code>filename_out = paste0(population.formatted.folder,
+                      &#39;vintage_&#39;,vintage,&#39;/Bridged-Race Population Estimates race &#39;,start_year_cdc,&#39; &#39;,end_year_cdc,&#39;.csv&#39;)
+write_csv(dat_all,filename_out)</code></pre>
+</div>
+<div id="load-each-year-of-raw-ethnicity-population-data-and-tidy-up-then-save-as-cleaned-csv" class="section level1">
+<h1>Load each year of raw ethnicity population data and tidy up, then
+save as cleaned csv</h1>
+<pre class="r"><code>dat_all = data.frame()
+for(year in c(start_year_cdc:end_year_cdc)){
+  for(sex in c(&#39;F&#39;,&#39;M&#39;)){
+    filename &lt;- paste0(population.cleaned.folder,
+                           &#39;vintage_&#39;,vintage,&#39;/Bridged-Race Population Estimates 1990-2020 &#39;,sex,&#39; ethnicity &#39;,year,&#39;.csv&#39;)
+
+    dat_current &lt;- read_csv(filename, col_types = cols(`Gender Code`=&quot;c&quot;, `Ethnicity Code` = &quot;c&quot;)) %&gt;%
+      select(-`Ethnicity`,-`State`,-`County`,-`Gender`,-`Yearly July 1st Estimates`) %&gt;% # get rid of unnecessary columns
+      rename(`year`=`Yearly July 1st Estimates Code`,`sex`=`Gender Code`,`ethnicity`=`Ethnicity Code`,
+             `stateFips`=`State Code`, `fips`=`County Code`, `pop`=`Population`) %&gt;% # rename columns
+      mutate(countyFips = str_sub(fips, start= -3)) %&gt;% # county fips 3-digit codes
+      mutate(sex = as.numeric(case_when(
+        sex== &#39;F&#39; ~ &#39;2&#39;,
+        sex== &#39;M&#39; ~ &#39;1&#39;,
+        TRUE ~ NA_character_))) %&gt;% # recode sex
+      mutate(ethnicity = case_when(
+        ethnicity== &#39;2135-2&#39; ~ &#39;Hispanic or Latino&#39;,
+        ethnicity== &#39;2186-5&#39; ~ &#39;Not Hispanic or Latino&#39;,
+        TRUE ~ NA_character_)) %&gt;% # recode ethnicity
+      mutate(pop = as.numeric(pop)) %&gt;% # pop as numeric
+      filter_at(vars(fips), all_vars(!is.na(.))) %&gt;%
+      group_by(fips,sex,ethnicity,year,stateFips,countyFips) %&gt;%
+      summarise(pop=sum(pop)) %&gt;% # sum pop by new groups
+      select(year,fips,stateFips,countyFips,sex,ethnicity,pop)
+    
+    dat_all = data.table::rbindlist(list(dat_all,dat_current))
+}}</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;fips&#39;, &#39;sex&#39;, &#39;ethnicity&#39;, &#39;year&#39;,
+## &#39;stateFips&#39;. You can override using the `.groups` argument.</code></pre>
+</div>
+<div id="save-output-2" class="section level1">
+<h1>Save output</h1>
+<pre class="r"><code>filename_out = paste0(population.formatted.folder,
+                      &#39;vintage_&#39;,vintage,&#39;/Bridged-Race Population Estimates ethnicity &#39;,start_year_cdc,&#39; &#39;,end_year_cdc,&#39;.csv&#39;)
 write_csv(dat_all,filename_out)</code></pre>
 </div>
 
