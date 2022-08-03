@@ -4,18 +4,28 @@ Work in progress by Robbie M Parks
 
 Currently monthly population (vintage 2020) during 1982 - 2020 for females and males by five-year (0-4, 5-9,.....,85+ years) and ten-year age group (0-4,5-14,15-24,...,65-74,75-84,85+ years) for all counties (by FIPS code) in US except Alaska (working on it).
 
-Actual output to use found at: output/population_processed/10_year_age_groups
+## Data for use by year and sex
 
-note: a_03 contains a look-up of FIPS Codes which have been changed over time to be consistent over time.
+[5-year age groups](output/population_processed/5_year_age_groups)
+
+[10-year age groups](output/population_processed/10_year_age_groups)
+
+[Race groups](output/population_processed/race_groups)
+
+[Ethnicity groups](output/population_processed/ethnicity_groups)
+
+## Important details
+
+a_03 contains a look-up of FIPS Codes which have been changed over time to be consistent over time.
+
+## Instructions on downloading raw origin files
 
 Data for Vintage 2020 downloaded from CDC Wonder at <https://wonder.cdc.gov/bridged-race-population.html>
-
-## Instructions on downloading raw files from link above:
 
 1.  By sex and age group: Download for each year as .txt file in two sexes (F, M) by sex, age group, state, county
 2.  By race/ethnicity: Download for each year as .txt file in two sexes (F, M) by sex, race/ethnicity, state, county
 
-## Data preparation (data_prep) list:
+## Data preparation (data_prep) list
 
 a_01_prepare_raw_population_data - initial processing to get from downloaded raw files to something that can be loaded
 
@@ -23,9 +33,19 @@ a_02_process_and_match_population_data - process to match format of older years 
 
 a_03_fix_county_codes - explore and fix counties which change codes to unify over time
 
-a_04_infer_monthly_population - infer population by month from annual data
+a_04_fix_county_codes_race - explore and fix counties which change codes to unify over time for race groups
 
-## Data exploration (data_exploration) list:
+a_05_fix_county_codes_ethnicity - explore and fix counties which change codes to unify over time for ethnicity groups
+
+a_06_infer_monthly_population_5\_year_groups - infer population by month from annual data for 5-year groups
+
+a_07_infer_monthly_population_10_year_groups - infer population by month from annual data for 10-year groups
+
+a_08_infer_monthly_population_race - infer population by month from annual data for race groups
+
+a_09_infer_monthly_population_ethnicity - infer population by month from annual data for ethnicity groups
+
+## Data exploration (data_exploration) list
 
 b_01_investigate_year_coverage - initial exploration of which county fips codes don't run the entire time
 
@@ -33,4 +53,6 @@ b_02_compare_old_against_new - compare originally downloaded vintage (2010) with
 
 b_03_explore_population_over_time - load and plot time series of population for sanity checks
 
-Personal running note: please run 0_00_create_folder_structure.R first to create folders which may not be there when first loaded. note: to run an R Markdown file from command line, run  Rscript -e "rmarkdown::render('SCRIPT_NAME.Rmd')"
+## Personal running note
+
+Please run 0_00_create_folder_structure.R first to create folders which may not be there when first loaded. note: to run an R Markdown file from command line, run  Rscript -e "rmarkdown::render('SCRIPT_NAME.Rmd')"

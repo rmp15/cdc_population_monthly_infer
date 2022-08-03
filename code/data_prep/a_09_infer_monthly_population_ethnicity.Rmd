@@ -1,0 +1,97 @@
+---
+title: "Infer monthly population (ethnicity)"
+output: html_document
+---
+
+# First step to load packages and file locations etc.
+```{r include=FALSE}
+rm(list=ls())
+ 
+# 1a Declare root directory, folder locations and load essential stuff
+project.folder <- paste0(print(here::here()),'/')
+source(paste0(project.folder,'0_00_create_folder_structure.R'))
+source(paste0(functions.folder,'script_initiate.R'))
+```
+
+# Load population that has been fixed to have consistent counties
+```{r}
+dat_all= data.frame()
+  for(year_selected in c(1990:end_year_cdc)){
+    if(year_selected<1990){
+      filename_in = paste0(population.county.fixed.folder,
+                        'pre_1990/pop_fixed_counties_ethnicity_', year_selected,'.csv')  
+    }
+    if(year_selected>=1990){
+      filename_in = paste0(population.county.fixed.folder,
+                        'vintage_',vintage,'/pop_fixed_counties_ethnicity_', year_selected,'.csv')
+    }
+    dat_year=read_csv(filename_in)
+    dat_all = data.table::rbindlist(list(dat_all,dat_year))
+    rm(dat_year)
+}
+```
+
+# Assume each population value is for the end of June/beginning of July (month = 6) and get rid of state and county individual columns (all info in fips)
+```{r}
+dat_all = dat_all %>% 
+  mutate(month=6) %>%
+  select(-stateFips,-countyFips)
+```
+
+# Create complete grid of population
+```{r}
+years = sort(unique(dat_all$year))
+fips = sort(unique(dat_all$fips))
+sexes = sort(unique(dat_all$sex))
+ethnicities = sort(unique(dat_all$ethnicity))
+months = c(1:12)
+
+complete.grid = expand.grid(year=years,fips=fips,sex=sexes,ethnicity=ethnicities,month=months) %>%
+  arrange(year,fips,sex,ethnicity,month)
+  
+dat_complete = left_join(complete.grid, dat_all) %>%
+  arrange(fips,sex,ethnicity,year,month)
+```
+
+# Infer monthly populations
+```{r}
+dat_complete = dat_complete %>%
+  group_by(sex,ethnicity,fips) %>%
+  mutate(pop = round(na.approx(pop, na.rm=FALSE))) %>%
+  fill(pop, .direction = "downup") 
+```
+
+# Save output by year in GitHub project
+```{r}
+for(year_selected in c(min(dat_complete$year):end_year_cdc)){
+  dat_year = dat_complete %>% dplyr::filter(year==year_selected)
+  if(year_selected<1990){
+    filename_out = paste0(population.ethnicity.processed.folder,
+                      'pre_1990/pop_monthly_ethnicity_groups_', year_selected,'.csv')  
+  }
+  if(year_selected>=1990){
+    filename_out = paste0(population.ethnicity.processed.folder,
+                      'vintage_',vintage,'/pop_monthly_ethnicity_groups_', year_selected,'.csv')
+  }
+  write_csv(dat_year,filename_out)
+}
+```
+
+# Save output by year in local location
+```{r}
+
+new_population_data.ethnicity = paste0(new_population_data,'ethnicity_groups/')
+
+for(year_selected in c(min(dat_complete$year):end_year_cdc)){
+  dat_year = dat_complete %>% dplyr::filter(year==year_selected)
+  if(year_selected<1990){
+    filename_out = paste0(new_population_data.ethnicity,
+                      'pre_1990/pop_monthly_ethnicity_groups_', year_selected,'.csv')  
+  }
+  if(year_selected>=1990){
+    filename_out = paste0(new_population_data.ethnicity,
+                      'vintage_',vintage,'/pop_monthly_ethnicity_groups_', year_selected,'.csv')
+  }
+  write_csv(dat_year,filename_out)
+}
+```
