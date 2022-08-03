@@ -25,6 +25,8 @@ Data for Vintage 2020 downloaded from CDC Wonder at <https://wonder.cdc.gov/brid
 1.  By sex and age group: Download for each year as .txt file in two sexes (F, M) by sex, age group, state, county
 2.  By race/ethnicity: Download for each year as .txt file in two sexes (F, M) by sex, race/ethnicity, state, county
 
+Data for pre-1990 downloaded from census.gov at <https://www.census.gov/data/tables/time-series/demo/popest/1980s-county.html>
+
 ## Data preparation (data_prep) list
 
 a_01_prepare_raw_population_data - initial processing to get from downloaded raw files to something that can be loaded
