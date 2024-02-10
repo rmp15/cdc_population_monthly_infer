@@ -20,6 +20,17 @@ a_03 contains a look-up of FIPS Codes which have been changed over time to be co
 
 ## Instructions on downloading raw origin files
 
+**2021-2022**
+
+Data for Vintage 2022 downloaded from CDC Wonder at <https://wonder.cdc.gov/single-race-population.html>
+
+1.  By sex and age group: Download for each year as .txt file in two sexes (F, M) by sex, age group, state, county
+2.  By race/ethnicity: Download for each year as .txt file in two sexes (F, M) by sex, race/ethnicity, state, county
+
+**1990-2020**
+
+**Note: NCHS ceased releasing bridged-race population estimates after release of the bridged-race intercensal population estimates for July 1, 2010 - July 2019. With the release of the intercensal population estimates, the series will be discontinued.**
+
 Data for Vintage 2020 downloaded from CDC Wonder at <https://wonder.cdc.gov/bridged-race-population.html>
 
 1.  By sex and age group: Download for each year as .txt file in two sexes (F, M) by sex, age group, state, county
@@ -27,7 +38,9 @@ Data for Vintage 2020 downloaded from CDC Wonder at <https://wonder.cdc.gov/brid
 
 ## Data preparation (data_prep) list
 
-a_01_prepare_raw_population_data - initial processing to get from downloaded raw files to something that can be loaded
+a_01_prepare_raw_bridged_race_population_data - initial processing to get from downloaded raw files to something that can be loaded
+
+a_01_prepare_raw_single_race_population_data - initial processing to get from downloaded raw files to something that can be loaded
 
 a_02_process_and_match_population_data - process to match format of older years (pre-1990 from US Census Bureau)
 
@@ -37,7 +50,7 @@ a_04_fix_county_codes_race - explore and fix counties which change codes to unif
 
 a_05_fix_county_codes_ethnicity - explore and fix counties which change codes to unify over time for ethnicity groups
 
-a_06_infer_monthly_population_5\_year_groups - infer population by month from annual data for 5-year groups
+a_06_infer_monthly_population_5_year_groups - infer population by month from annual data for 5-year groups
 
 a_07_infer_monthly_population_10_year_groups - infer population by month from annual data for 10-year groups
 
