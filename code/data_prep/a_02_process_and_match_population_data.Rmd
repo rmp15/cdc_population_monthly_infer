@@ -13,6 +13,8 @@ source(paste0(project.folder,'0_00_create_folder_structure.R'))
 source(paste0(functions.folder,'script_initiate.R'))
 ```
 
+# Bridged race
+
 # Load each year of raw age group population data and tidy up, then save as cleaned csv
 ```{r}
 dat_all = data.frame()
@@ -143,3 +145,141 @@ filename_out = paste0(population.formatted.folder,
                       'vintage_',vintage,'/Bridged-Race Population Estimates ethnicity ',start_year_cdc,' ',end_year_cdc,'.csv')
 write_csv(dat_all,filename_out)
 ```
+
+# Single race
+
+# Load each year of raw age group population data and tidy up, then save as cleaned csv
+```{r}
+dat_all = data.frame()
+for(year in c(start_year_cdc_single_race:end_year_cdc_single_race)){
+  for(sex in c('F','M')){
+    filename <- paste0(population.cleaned.folder,
+                           'vintage_',vintage_single_race,'/Single-Race Population Estimates 2020-2022 ',sex,' ',year,'.csv')
+
+    dat_current <- read_csv(filename, col_types = cols(`Gender Code`="c", `Age Group Code` = "c")) %>%
+      mutate(year=year) %>% # add year
+      select(-`Age Group`,-`State`,-`County`,-`Gender`) %>% # get rid of unnecessary columns
+      rename(`sex`=`Gender Code`,`age`=`Age Group Code`,
+             `stateFips`=`State Code`, `fips`=`County Code`, `pop`=`Population`) %>% # rename columns
+      mutate(countyFips = str_sub(fips, start= -3)) %>% # county fips 3-digit codes
+      mutate(sex = as.numeric(case_when(
+        sex== 'F' ~ '2',
+        sex== 'M' ~ '1',
+        TRUE ~ NA_character_))) %>% # recode sex
+      mutate(age = as.numeric(case_when(
+        age=='0-4' ~ '0',
+        age=='5-9' ~ '5',
+        age=='10-14' ~ '10',
+        age=='15-19' ~ '15',
+        age=='20-24' ~ '20',
+        age=='25-29' ~ '25',
+        age=='30-34' ~ '30',
+        age=='35-39' ~ '35',
+        age=='40-44' ~ '40',
+        age=='45-49' ~ '45',
+        age=='50-54' ~ '50',
+        age=='55-59' ~ '55',
+        age=='60-64' ~ '60',
+        age=='65-69' ~ '65',
+        age=='70-74' ~ '70',
+        age=='75-79' ~ '75',
+        age=='80-84' ~ '80',
+        age=='85+' ~ '85',
+        TRUE ~ NA_character_))) %>%
+      group_by(fips,sex,age,year,stateFips,countyFips) %>%
+      summarise(pop=sum(pop)) %>% # sum pop by new groups
+      select(year,fips,stateFips,countyFips,sex,age,pop)
+    
+    dat_all = data.table::rbindlist(list(dat_all,dat_current))
+}}
+```
+
+# Save output
+```{r}
+filename_out = paste0(population.formatted.folder,
+                      'vintage_',vintage_single_race,'/Single-Race Population Estimates ',start_year_cdc_single_race,' ',end_year_cdc_single_race,'.csv')
+write_csv(dat_all,filename_out)
+```
+
+# Load each year of raw race population data and tidy up, then save as cleaned csv
+```{r}
+dat_all = data.frame()
+for(year in c(start_year_cdc_single_race:end_year_cdc_single_race)){
+  for(sex in c('F','M')){
+    filename <- paste0(population.cleaned.folder,
+                           'vintage_',vintage_single_race,'/Single-Race Population Estimates 2020-2022 ',sex,' race ',year,'.csv')
+
+    dat_current <- read_csv(filename, col_types = cols(`Gender Code`="c", `Race Code` = "c")) %>%
+      mutate(year=year) %>% # add year
+      select(-`Race`,-`State`,-`County`,-`Gender`) %>% # get rid of unnecessary columns
+      rename(`sex`=`Gender Code`,`race`=`Race Code`,
+             `stateFips`=`State Code`, `fips`=`County Code`, `pop`=`Population`) %>% # rename columns
+      mutate(countyFips = str_sub(fips, start= -3)) %>% # county fips 3-digit codes
+      mutate(sex = as.numeric(case_when(
+        sex== 'F' ~ '2',
+        sex== 'M' ~ '1',
+        TRUE ~ NA_character_))) %>% # recode sex
+      mutate(race = case_when(
+        race== '1002-5' ~ 'American Indian or Alaska Native',
+        race== 'A' ~ 'Asian',
+        race== '2054-5' ~ 'Black or African American',
+        race== 'NHOPI' ~ 'Native Hawaiian or Other Pacific Islander',
+        race== '2106-3' ~ 'White',
+        race== 'M' ~ 'More than one race',
+        TRUE ~ NA_character_)) %>% # recode race
+      mutate(pop = as.numeric(pop)) %>% # pop as numeric
+      filter_at(vars(fips), all_vars(!is.na(.))) %>%
+      group_by(fips,sex,race,year,stateFips,countyFips) %>%
+      summarise(pop=sum(pop)) %>% # sum pop by new groups
+      select(year,fips,stateFips,countyFips,sex,race,pop)
+    
+    dat_all = data.table::rbindlist(list(dat_all,dat_current))
+}}
+```
+
+# Save output
+```{r}
+filename_out = paste0(population.formatted.folder,
+                      'vintage_',vintage_single_race,'/Single-Race Population Estimates race ',start_year_cdc_single_race,' ',end_year_cdc_single_race,'.csv')
+write_csv(dat_all,filename_out)
+```
+
+# Load each year of raw ethnicity population data and tidy up, then save as cleaned csv
+```{r}
+dat_all = data.frame()
+for(year in c(start_year_cdc_single_race:end_year_cdc_single_race)){
+  for(sex in c('F','M')){
+    filename <- paste0(population.cleaned.folder,
+                           'vintage_',vintage_single_race,'/Single-Race Population Estimates 2020-2022 ',sex,' ethnicity ',year,'.csv')
+
+    dat_current <- read_csv(filename, col_types = cols(`Gender Code`="c", `Ethnicity Code` = "c")) %>%
+      mutate(year=year) %>% # add year
+      select(-`Ethnicity`,-`State`,-`County`,-`Gender`) %>% # get rid of unnecessary columns
+      rename(`sex`=`Gender Code`,`ethnicity`=`Ethnicity Code`,
+             `stateFips`=`State Code`, `fips`=`County Code`, `pop`=`Population`) %>% # rename columns
+      mutate(countyFips = str_sub(fips, start= -3)) %>% # county fips 3-digit codes
+      mutate(sex = as.numeric(case_when(
+        sex== 'F' ~ '2',
+        sex== 'M' ~ '1',
+        TRUE ~ NA_character_))) %>% # recode sex
+      mutate(ethnicity = case_when(
+        ethnicity== '2135-2' ~ 'Hispanic or Latino',
+        ethnicity== '2186-5' ~ 'Not Hispanic or Latino',
+        TRUE ~ NA_character_)) %>% # recode ethnicity
+      mutate(pop = as.numeric(pop)) %>% # pop as numeric
+      filter_at(vars(fips), all_vars(!is.na(.))) %>%
+      group_by(fips,sex,ethnicity,year,stateFips,countyFips) %>%
+      summarise(pop=sum(pop)) %>% # sum pop by new groups
+      select(year,fips,stateFips,countyFips,sex,ethnicity,pop)
+    
+    dat_all = data.table::rbindlist(list(dat_all,dat_current))
+}}
+```
+
+# Save output
+```{r}
+filename_out = paste0(population.formatted.folder,
+                      'vintage_',vintage_single_race,'/Single-Race Population Estimates ethnicity ',start_year_cdc_single_race,' ',end_year_cdc_single_race,'.csv')
+write_csv(dat_all,filename_out)
+```
+

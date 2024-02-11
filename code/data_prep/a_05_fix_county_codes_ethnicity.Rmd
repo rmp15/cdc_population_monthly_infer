@@ -17,12 +17,19 @@ source(paste0(functions.folder,'script_initiate.R'))
 ```{r}
 filename_in = paste0(population.formatted.folder,
                       'vintage_',vintage,'/Bridged-Race Population Estimates ethnicity ',start_year_cdc,' ',end_year_cdc,'.csv')
-dat.1990.onwards = read_csv(filename_in)
+dat.1990.2020 = read_csv(filename_in)
+```
+
+# Load formatted cdc single-race data
+```{r}
+filename_in = paste0(population.formatted.folder,
+                      'vintage_',vintage_single_race,'/Single-Race Population Estimates ethnicity ',start_year_cdc_single_race,' ',end_year_cdc_single_race,'.csv')
+dat.2021.onwards = read_csv(filename_in)
 ```
 
 # combine pre-1990 and cdc bridged-race (1990 onwards) data
 ```{r}
-dat = bind_rows(dat.1990.onwards) %>%
+dat = bind_rows(dat.1990.2020, dat.2021.onwards) %>%
   arrange(year,fips,sex,ethnicity)
 ```
 
@@ -53,15 +60,19 @@ dat = dat %>%
 
 # Save output
 ```{r}
-for(year_selected in c(min(dat$year):end_year_cdc)){
+for(year_selected in c(start_year_overall:end_year_cdc_single_race)){
   dat_year = dat %>% dplyr::filter(year==year_selected)
   if(year_selected<1990){
     filename_out = paste0(population.county.fixed.folder,
-                      'pre_1990/pop_fixed_counties_', year_selected,'.csv')  
+                      'pre_1990/pop_fixed_counties_ethnicity', year_selected,'.csv')  
   }
-  if(year_selected>=1990){
+  if(year_selected>=1990&year_selected<=2020){
     filename_out = paste0(population.county.fixed.folder,
                       'vintage_',vintage,'/pop_fixed_counties_ethnicity_', year_selected,'.csv')
+  }
+  if(year_selected>=2021){
+    filename_out = paste0(population.county.fixed.folder,
+                      'vintage_',vintage_single_race,'/pop_fixed_counties_ethnicity_', year_selected,'.csv')
   }
   write_csv(dat_year,filename_out)
 }
