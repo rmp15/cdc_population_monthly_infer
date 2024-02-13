@@ -16,15 +16,19 @@ source(paste0(functions.folder,'script_initiate.R'))
 # Load population that has been fixed to have consistent counties
 ```{r}
 dat_all= data.frame()
-  for(year_selected in c(start_year_overall:end_year_cdc)){
+  for(year_selected in c(start_year_overall:end_year_cdc_single_race)){
     if(year_selected<1990){
       filename_in = paste0(population.county.fixed.folder,
                         'pre_1990/pop_fixed_counties_', year_selected,'.csv')  
     }
-    if(year_selected>=1990){
+    if(year_selected>=1990&year_selected<=2020){
       filename_in = paste0(population.county.fixed.folder,
                         'vintage_',vintage,'/pop_fixed_counties_', year_selected,'.csv')
     }
+    if(year_selected>=2021){
+      filename_in = paste0(population.county.fixed.folder,
+                      'vintage_',vintage_single_race,'/pop_fixed_counties_', year_selected,'.csv')
+  }    
     dat_year=read_csv(filename_in)
     dat_all = data.table::rbindlist(list(dat_all,dat_year))
     rm(dat_year)

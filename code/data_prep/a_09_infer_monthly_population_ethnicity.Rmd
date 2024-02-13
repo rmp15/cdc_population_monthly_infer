@@ -16,7 +16,7 @@ source(paste0(functions.folder,'script_initiate.R'))
 # Load population that has been fixed to have consistent counties
 ```{r}
 dat_all= data.frame()
-  for(year_selected in c(1990:end_year_cdc)){
+  for(year_selected in c(1990:end_year_cdc_single_race)){
     if(year_selected<1990){
       filename_in = paste0(population.county.fixed.folder,
                         'pre_1990/pop_fixed_counties_ethnicity_', year_selected,'.csv')  
